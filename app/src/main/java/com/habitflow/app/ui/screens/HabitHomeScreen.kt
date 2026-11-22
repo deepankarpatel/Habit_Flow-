@@ -24,6 +24,9 @@ import com.habitflow.app.ui.theme.HabitFlowTheme
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateListOf
+
 
 private val Background = Color(0xFFF7F6F1)
 private val Green = Color(0xFF315C48)
@@ -31,16 +34,10 @@ private val Dark = Color(0xFF252B27)
 private val Muted = Color(0xFF858B85)
 
 @Composable
-fun HabitHomeScreen() {
-
-    val habits = remember {
-        mutableStateListOf(
-            Habit(1, "Drink Water", "💧", "5 of 8 glasses"),
-            Habit(2, "Read a Book", "📖", "3 of 3 pages"),
-            Habit(3, "Exercise", "🏃", "Daily target"),
-            Habit(4, "Meditation", "🧘", "10 minutes")
-        )
-    }
+fun HabitHomeScreen(
+    habits: SnapshotStateList<Habit>,
+    onAddHabit: () -> Unit
+) {
 
     val completedCount = habits.count { it.isCompleted }
     val totalHabits = habits.size
@@ -204,12 +201,15 @@ fun HabitHomeScreen() {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "My Habits",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Dark
-                )
+                TextButton(
+                    onClick = onAddHabit
+                ) {
+                    Text(
+                        text = "+ Add",
+                        color = Green,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
 
                 Text(
                     text = "$totalHabits habits",
@@ -237,10 +237,24 @@ fun HabitHomeScreen() {
     }
 }
 
+
 @Preview(showBackground = true)
 @Composable
 fun HabitHomeScreenPreview() {
+
+    val sampleHabits = remember {
+        mutableStateListOf(
+            Habit(1, "Drink Water", "💧", "5 of 8 glasses"),
+            Habit(2, "Read a Book", "📖", "3 of 3 pages"),
+            Habit(3, "Exercise", "🏃", "Daily target"),
+            Habit(4, "Meditation", "🧘", "10 minutes")
+        )
+    }
+
     HabitFlowTheme {
-        HabitHomeScreen()
+        HabitHomeScreen(
+            habits = sampleHabits,
+            onAddHabit = {}
+        )
     }
 }
