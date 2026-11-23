@@ -1,4 +1,3 @@
-
 package com.habitflow.app.ui.screens
 
 import androidx.compose.foundation.background
@@ -9,24 +8,21 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.habitflow.app.domain.model.Habit
+import com.habitflow.app.domain.model.HabitItemUiState
+import com.habitflow.app.ui.components.EmptyHabitsState
 import com.habitflow.app.ui.components.HabitCard
-import androidx.compose.ui.tooling.preview.Preview
-import com.habitflow.app.ui.theme.HabitFlowTheme
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.mutableStateListOf
-
 
 private val Background = Color(0xFFF7F6F1)
 private val Green = Color(0xFF315C48)
@@ -35,15 +31,20 @@ private val Muted = Color(0xFF858B85)
 
 @Composable
 fun HabitHomeScreen(
-    habits: SnapshotStateList<Habit>,
-    onAddHabit: () -> Unit
+    habitItems: List<HabitItemUiState>,
+    onAddHabit: () -> Unit,
+    onIncrement: (habitId: Int, target: Int) -> Unit,
+    onDecrement: (habitId: Int, target: Int) -> Unit,
+    onToggleCompletion: (habitId: Int, target: Int) -> Unit,
+    onHabitClick: (HabitItemUiState) -> Unit = {},
+    bottomBar: @Composable () -> Unit = {}
 ) {
 
-    val completedCount = habits.count { it.isCompleted }
-    val totalHabits = habits.size
+    val completedCount = habitItems.count { it.isCompleted }
+    val totalHabits = habitItems.size
 
-    val progress = if (totalHabits > 0) {
-        completedCount.toFloat() / totalHabits
+    val overallProgressFraction = if (totalHabits > 0) {
+        habitItems.sumOf { it.progressFraction.toDouble() }.toFloat() / totalHabits
     } else {
         0f
     }
@@ -58,38 +59,9 @@ fun HabitHomeScreen(
         DateTimeFormatter.ofPattern("EEEE, dd MMMM")
     )
 
-    var selectedTab by remember { mutableIntStateOf(0) }
-
     Scaffold(
         containerColor = Background,
-        bottomBar = {
-            NavigationBar(
-                containerColor = Color.White
-            ) {
-                val tabs = listOf(
-                    "Home" to "⌂",
-                    "Habits" to "✓",
-                    "Reports" to "▥",
-                    "Settings" to "⚙"
-                )
-
-                tabs.forEachIndexed { index, tab ->
-                    NavigationBarItem(
-                        selected = selectedTab == index,
-                        onClick = { selectedTab = index },
-                        icon = {
-                            Text(
-                                text = tab.second,
-                                fontSize = 20.sp
-                            )
-                        },
-                        label = {
-                            Text(tab.first)
-                        }
-                    )
-                }
-            }
-        }
+        bottomBar = bottomBar
     ) { padding ->
 
         Column(
@@ -150,8 +122,7 @@ fun HabitHomeScreen(
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement =
-                            Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
                             text = "Your daily goals",
@@ -160,7 +131,7 @@ fun HabitHomeScreen(
                         )
 
                         Text(
-                            text = "${(progress * 100).toInt()}%",
+                            text = "${(overallProgressFraction * 100).toInt()}%",
                             fontWeight = FontWeight.Bold,
                             color = Green
                         )
@@ -178,7 +149,7 @@ fun HabitHomeScreen(
                         Box(
                             modifier = Modifier
                                 .fillMaxHeight()
-                                .fillMaxWidth(progress)
+                                .fillMaxWidth(overallProgressFraction)
                                 .clip(CircleShape)
                                 .background(Green)
                         )
@@ -220,41 +191,61 @@ fun HabitHomeScreen(
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            habits.forEachIndexed { index, habit ->
-
-                HabitCard(
-                    habit = habit,
-                    onClick = {
-                        habits[index] = habit.copy(
-                            isCompleted = !habit.isCompleted
+            if (habitItems.isEmpty()) {
+                EmptyHabitsState(onAddHabit = onAddHabit)
+            } else {
+                habitItems.forEach { habitItem ->
+                    key(habitItem.habit.id) {
+                        HabitCard(
+                            habitItem = habitItem,
+                            onIncrement = {
+                                onIncrement(habitItem.habit.id, habitItem.target)
+                            },
+                            onDecrement = {
+                                onDecrement(habitItem.habit.id, habitItem.target)
+                            },
+                            onToggleComplete = {
+                                onToggleCompletion(habitItem.habit.id, habitItem.target)
+                            },
+                            onClick = {
+                                onHabitClick(habitItem)
+                            }
                         )
                     }
-                )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
             }
         }
     }
 }
 
-
 @Preview(showBackground = true)
 @Composable
 fun HabitHomeScreenPreview() {
-
-    val sampleHabits = remember {
-        mutableStateListOf(
-            Habit(1, "Drink Water", "💧", "5 of 8 glasses"),
-            Habit(2, "Read a Book", "📖", "3 of 3 pages"),
-            Habit(3, "Exercise", "🏃", "Daily target"),
-            Habit(4, "Meditation", "🧘", "10 minutes")
+    val sampleItems = listOf(
+        HabitItemUiState(
+            habit = Habit(1, "Drink Water", "💧", "5 of 8 glasses", target = 8, unit = "glasses"),
+            date = "2026-03-09",
+            completedCount = 5,
+            target = 8,
+            isCompleted = false
+        ),
+        HabitItemUiState(
+            habit = Habit(2, "Read a Book", "📖", "3 of 3 pages", target = 3, unit = "pages"),
+            date = "2026-03-09",
+            completedCount = 3,
+            target = 3,
+            isCompleted = true
         )
-    }
+    )
 
-    HabitFlowTheme {
-        HabitHomeScreen(
-            habits = sampleHabits,
-            onAddHabit = {}
-        )
-    }
+    HabitHomeScreen(
+        habitItems = sampleItems,
+        onAddHabit = {},
+        onIncrement = { _, _ -> },
+        onDecrement = { _, _ -> },
+        onToggleCompletion = { _, _ -> },
+        onHabitClick = {}
+    )
 }

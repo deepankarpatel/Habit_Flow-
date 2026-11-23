@@ -1,4 +1,3 @@
-
 package com.habitflow.app.ui.components
 
 import androidx.compose.foundation.background
@@ -19,79 +18,154 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.habitflow.app.domain.model.Habit
+import com.habitflow.app.domain.model.HabitItemUiState
 import com.habitflow.app.ui.theme.HabitFlowTheme
 
 private val Green = Color(0xFF315C48)
+private val LightGreen = Color(0xFFE8F0EC)
+private val Dark = Color(0xFF252B27)
+private val Muted = Color(0xFF858B85)
 
 @Composable
 fun HabitCard(
-    habit: Habit,
-    onClick: () -> Unit
+    habitItem: HabitItemUiState,
+    onIncrement: () -> Unit,
+    onDecrement: () -> Unit,
+    onToggleComplete: () -> Unit,
+    onClick: (() -> Unit)? = null,
+    modifier: Modifier = Modifier
 ) {
+    val habit = habitItem.habit
+
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
-            .clickable { onClick() },
+            .then(
+                if (onClick != null) Modifier.clickable { onClick() } else Modifier
+            ),
         shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(
             containerColor = Color.White
         )
     ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            modifier = Modifier.padding(16.dp)
         ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Emoji Icon
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(Color(0xFFF1F4EF)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = habit.emoji,
+                        fontSize = 23.sp
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(14.dp))
+
+                // Name & Progress
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = habit.name,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Dark
+                    )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Text(
+                        text = habitItem.progressText,
+                        fontSize = 12.sp,
+                        color = Muted
+                    )
+                }
+
+                // Controls: Minus, Plus, Complete Toggle
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    // Decrement (-) Button
+                    Box(
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFFF0F1ED))
+                            .clickable { onDecrement() },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "−",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Dark
+                        )
+                    }
+
+                    // Increment (+) Button
+                    Box(
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clip(CircleShape)
+                            .background(LightGreen)
+                            .clickable { onIncrement() },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "+",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Green
+                        )
+                    }
+
+                    // Completion (✓) Checkbox
+                    Box(
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clip(CircleShape)
+                            .background(
+                                if (habitItem.isCompleted) Green else Color(0xFFF0F1ED)
+                            )
+                            .clickable { onToggleComplete() },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = if (habitItem.isCompleted) "✓" else "",
+                            color = Color.White,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+
+            // Progress bar indicator
+            Spacer(modifier = Modifier.height(12.dp))
 
             Box(
                 modifier = Modifier
-                    .size(48.dp)
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(Color(0xFFF1F4EF)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = habit.emoji,
-                    fontSize = 23.sp
-                )
-            }
-
-            Spacer(modifier = Modifier.width(14.dp))
-
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    text = habit.name,
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color(0xFF252B27)
-                )
-
-                Spacer(modifier = Modifier.height(5.dp))
-
-                Text(
-                    text = habit.progressText,
-                    fontSize = 12.sp,
-                    color = Color(0xFF858B85)
-                )
-            }
-
-            Box(
-                modifier = Modifier
-                    .size(30.dp)
+                    .fillMaxWidth()
+                    .height(5.dp)
                     .clip(CircleShape)
-                    .background(
-                        if (habit.isCompleted)
-                            Green
-                        else
-                            Color(0xFFF0F1ED)
-                    ),
-                contentAlignment = Alignment.Center
+                    .background(Color(0xFFF0F1ED))
             ) {
-                Text(
-                    text = if (habit.isCompleted) "✓" else "",
-                    color = Color.White,
-                    fontSize = 17.sp
+                Box(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .fillMaxWidth(habitItem.progressFraction)
+                        .clip(CircleShape)
+                        .background(if (habitItem.isCompleted) Green else Color(0xFF689F84))
                 )
             }
         }
@@ -109,23 +183,16 @@ fun HabitCardPreview() {
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             HabitCard(
-                habit = Habit(
-                    id = 1,
-                    name = "Drink Water",
-                    emoji = "💧",
-                    progressText = "7/8 glasses",
+                habitItem = HabitItemUiState(
+                    habit = Habit(1, "Drink Water", "💧", "5 of 8 glasses", target = 8, unit = "glasses"),
+                    date = "2026-03-09",
+                    completedCount = 5,
+                    target = 8,
                     isCompleted = false
                 ),
-                onClick = {}
-            )
-            HabitCard(
-                habit = Habit(
-                    id = 2,
-                    name = "Morning Meditation",
-                    emoji = "🧘",
-                    progressText = "10 mins",
-                    isCompleted = true
-                ),
+                onIncrement = {},
+                onDecrement = {},
+                onToggleComplete = {},
                 onClick = {}
             )
         }

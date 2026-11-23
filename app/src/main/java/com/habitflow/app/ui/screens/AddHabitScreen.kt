@@ -422,7 +422,7 @@ fun AddHabitScreen(
                     else -> {
 
                         val newHabit = Habit(
-                            id = System.currentTimeMillis().toInt(),
+                            id = 0,
                             name = habitName.trim(),
                             emoji = selectedEmoji,
                             progressText = "0 of ${target} $unit",
