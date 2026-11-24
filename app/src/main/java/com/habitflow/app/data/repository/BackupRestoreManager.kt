@@ -6,6 +6,7 @@ import com.habitflow.app.data.local.entity.HabitEntity
 import kotlinx.coroutines.flow.first
 import org.json.JSONArray
 import org.json.JSONObject
+import androidx.room.withTransaction
 
 class BackupRestoreManager(
     private val database: HabitDatabase
@@ -13,9 +14,10 @@ class BackupRestoreManager(
 
     suspend fun exportBackupJson(): String {
         val habitEntities = database.habitDao().getAllHabits().first()
-        val completionEntities = database.habitCompletionDao().getAllCompletedRecords().first()
+        val completionEntities = database.habitCompletionDao().getAllCompletions()
 
         val root = JSONObject()
+        root.put("version", 1)
 
         val habitsArray = JSONArray()
         for (habit in habitEntities) {
@@ -61,9 +63,10 @@ class BackupRestoreManager(
             val habitsArray = root.optJSONArray("habits") ?: JSONArray()
             val completionsArray = root.optJSONArray("completions") ?: JSONArray()
 
-            for (i in 0 until habitsArray.length()) {
+            // 1. Parse everything first. Any bad row throws before the DB is touched.
+            val habits = (0 until habitsArray.length()).map { i ->
                 val obj = habitsArray.getJSONObject(i)
-                val entity = HabitEntity(
+                HabitEntity(
                     id = obj.getInt("id"),
                     name = obj.getString("name"),
                     emoji = obj.getString("emoji"),
@@ -78,22 +81,26 @@ class BackupRestoreManager(
                     isCompleted = obj.optBoolean("isCompleted", false),
                     createdAt = obj.optLong("createdAt", System.currentTimeMillis())
                 )
-                database.habitDao().insertHabit(entity)
             }
+            val habitIds = habits.map { it.id }.toSet()
 
-            for (i in 0 until completionsArray.length()) {
+            val completions = (0 until completionsArray.length()).map { i ->
                 val obj = completionsArray.getJSONObject(i)
-                val entity = HabitCompletionEntity(
-                    id = obj.optInt("id", 0),
+                HabitCompletionEntity(
+                    id = 0, // let Room assign ids; (habitId, date) is the real key
                     habitId = obj.getInt("habitId"),
                     date = obj.getString("date"),
                     completedCount = obj.getInt("completedCount"),
                     isCompleted = obj.getBoolean("isCompleted"),
                     updatedAt = obj.optLong("updatedAt", System.currentTimeMillis())
                 )
-                database.habitCompletionDao().upsertCompletion(entity)
-            }
+            }.filter { it.habitId in habitIds } // avoid foreign key failures
 
+            // 2. Write all-or-nothing.
+            database.withTransaction {
+                habits.forEach { database.habitDao().upsertHabit(it) }
+                completions.forEach { database.habitCompletionDao().upsertCompletion(it) }
+            }
             true
         } catch (_: Exception) {
             false

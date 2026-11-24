@@ -9,13 +9,14 @@ import androidx.room.Query
 import androidx.room.Update
 import com.habitflow.app.data.local.entity.HabitEntity
 import kotlinx.coroutines.flow.Flow
+import androidx.room.Upsert
 
 @Dao
 interface HabitDao {
 
     // Insert a new habit
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertHabit(habit: HabitEntity)
+    suspend fun insertHabit(habit: HabitEntity): Long
 
     // Get all habits
     @Query("SELECT * FROM habits ORDER BY createdAt DESC")
@@ -32,6 +33,9 @@ interface HabitDao {
     // Delete a habit
     @Delete
     suspend fun deleteHabit(habit: HabitEntity)
+
+    @Upsert
+    suspend fun upsertHabit(habit: HabitEntity)
 
     // Delete all habits
     @Query("DELETE FROM habits")

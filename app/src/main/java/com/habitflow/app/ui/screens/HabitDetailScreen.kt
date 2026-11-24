@@ -20,6 +20,11 @@ import com.habitflow.app.domain.model.Habit
 import com.habitflow.app.domain.model.HabitItemUiState
 import com.habitflow.app.ui.components.DeleteConfirmationDialog
 import com.habitflow.app.ui.theme.HabitFlowTheme
+import com.habitflow.app.domain.usecase.StreakCalculator
+import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.format.TextStyle
+import java.util.Locale
 
 private val Green = Color(0xFF315C48)
 private val Dark = Color(0xFF252B27)
@@ -32,9 +37,16 @@ fun HabitDetailScreen(
     habitItem: HabitItemUiState,
     onBack: () -> Unit,
     onSave: (Habit) -> Unit,
-    onDelete: (Habit) -> Unit
+    onDelete: (Habit) -> Unit,
+    completedDates: Set<LocalDate> = emptySet()
 ) {
     val habit = habitItem.habit
+
+    val scheduledDays = habit.activeDays.mapNotNull { name ->
+        DayOfWeek.entries.firstOrNull { it.getDisplayName(TextStyle.SHORT, Locale.ENGLISH) == name }
+    }.toSet()
+    val currentStreak = StreakCalculator.calculateCurrentStreak(completedDates, activeDays = scheduledDays)
+    val bestStreak = StreakCalculator.calculateBestStreak(completedDates, activeDays = scheduledDays)
 
     var habitName by remember { mutableStateOf(habit.name) }
     var selectedEmoji by remember { mutableStateOf(habit.emoji) }
@@ -107,6 +119,32 @@ fun HabitDetailScreen(
         )
 
         Spacer(modifier = Modifier.height(28.dp))
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(18.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(18.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column {
+                    Text("Current streak", fontSize = 12.sp, color = Muted)
+                    Text("🔥 $currentStreak days", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Dark)
+                }
+                Column {
+                    Text("Best streak", fontSize = 12.sp, color = Muted)
+                    Text("🏆 $bestStreak days", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Dark)
+                }
+                Column {
+                    Text("Total", fontSize = 12.sp, color = Muted)
+                    Text("${completedDates.size} days", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Dark)
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(22.dp))
 
         // Habit name
         SectionTitle("Habit name")

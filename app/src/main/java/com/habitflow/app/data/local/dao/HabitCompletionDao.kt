@@ -25,6 +25,12 @@ interface HabitCompletionDao {
     @Query("SELECT * FROM habit_completions WHERE isCompleted = 1")
     fun getAllCompletedRecords(): Flow<List<HabitCompletionEntity>>
 
+    @Query("SELECT * FROM habit_completions")
+    suspend fun getAllCompletions(): List<HabitCompletionEntity>
+
     @Query("DELETE FROM habit_completions WHERE habitId = :habitId")
     suspend fun deleteCompletionsForHabit(habitId: Int)
+
+    @Query("SELECT date FROM habit_completions WHERE habitId = :habitId AND isCompleted = 1")
+    fun getCompletedDatesForHabit(habitId: Int): Flow<List<String>>
 }

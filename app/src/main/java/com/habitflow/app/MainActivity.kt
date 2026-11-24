@@ -38,6 +38,7 @@ import com.habitflow.app.ui.screens.ReportsScreen
 import com.habitflow.app.ui.screens.SettingsScreen
 import com.habitflow.app.ui.theme.HabitFlowTheme
 import com.habitflow.app.ui.viewmodel.HabitViewModel
+import java.time.LocalDate
 
 class MainActivity : ComponentActivity() {
 
@@ -90,6 +91,47 @@ class MainActivity : ComponentActivity() {
                 val permissionLauncher = rememberLauncherForActivityResult(
                     contract = ActivityResultContracts.RequestPermission()
                 ) { _ -> }
+
+                val exportLauncher = rememberLauncherForActivityResult(
+                    ActivityResultContracts.CreateDocument("application/json")
+                ) { uri ->
+                    if (uri != null) {
+                        habitViewModel.exportBackup { json ->
+                            try {
+                                context.contentResolver.openOutputStream(uri)?.use {
+                                    it.write(json.toByteArray(Charsets.UTF_8))
+                                }
+                                Toast.makeText(context, "Backup saved.", Toast.LENGTH_SHORT).show()
+                            } catch (_: Exception) {
+                                Toast.makeText(context, "Could not save backup.", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+                }
+
+                val importLauncher = rememberLauncherForActivityResult(
+                    ActivityResultContracts.OpenDocument()
+                ) { uri ->
+                    if (uri != null) {
+                        val json = try {
+                            context.contentResolver.openInputStream(uri)?.use {
+                                it.readBytes().toString(Charsets.UTF_8)
+                            }
+                        } catch (_: Exception) { null }
+
+                        if (json == null) {
+                            Toast.makeText(context, "Could not read file.", Toast.LENGTH_SHORT).show()
+                        } else {
+                            habitViewModel.importBackup(context, json) { success ->
+                                Toast.makeText(
+                                    context,
+                                    if (success) "Data restored successfully!" else "Invalid backup file.",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
+                    }
+                }
 
                 LaunchedEffect(Unit) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -147,11 +189,15 @@ class MainActivity : ComponentActivity() {
                     }
 
                     selectedHabitForDetail != null -> {
+                        val detailId = selectedHabitForDetail!!.habit.id
+                        val habitCompletedDates by remember(detailId) {
+                            habitViewModel.completedDatesForHabit(detailId)
+                        }.collectAsStateWithLifecycle(initialValue = emptySet())
+
                         HabitDetailScreen(
                             habitItem = selectedHabitForDetail!!,
-                            onBack = {
-                                selectedHabitForDetail = null
-                            },
+                            completedDates = habitCompletedDates,
+                            onBack = { selectedHabitForDetail = null },
                             onSave = { updatedHabit ->
                                 habitViewModel.updateHabit(context, updatedHabit)
                                 selectedHabitForDetail = null
@@ -231,18 +277,17 @@ class MainActivity : ComponentActivity() {
                             },
                             notificationsEnabled = notificationsEnabled,
                             onNotificationsChange = { enabled ->
-                                habitViewModel.setNotificationsEnabled(enabled)
+                                habitViewModel.setNotificationsEnabled(context, enabled)
                             },
+
                             onExportBackup = {
-                                habitViewModel.exportBackup { json ->
-                                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                                    val clip = ClipData.newPlainText("HabitFlow Backup JSON", json)
-                                    clipboard.setPrimaryClip(clip)
-                                    Toast.makeText(context, "Backup copied to clipboard!", Toast.LENGTH_LONG).show()
-                                }
+                                exportLauncher.launch("habitflow-backup-${LocalDate.now()}.json")
+                            },
+                            onImportFromFile = {
+                                importLauncher.launch(arrayOf("*/*"))
                             },
                             onImportBackup = { json ->
-                                habitViewModel.importBackup(json) { success ->
+                                habitViewModel.importBackup(context, json) { success ->
                                     if (success) {
                                         Toast.makeText(context, "Data restored successfully!", Toast.LENGTH_SHORT).show()
                                     } else {
@@ -251,7 +296,7 @@ class MainActivity : ComponentActivity() {
                                 }
                             },
                             onResetData = {
-                                habitViewModel.resetAllData()
+                                habitViewModel.resetAllData(context)
                                 Toast.makeText(context, "All app data reset.", Toast.LENGTH_SHORT).show()
                             },
                             bottomBar = bottomBar

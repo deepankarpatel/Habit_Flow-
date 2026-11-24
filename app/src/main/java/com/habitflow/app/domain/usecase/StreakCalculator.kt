@@ -1,52 +1,57 @@
 package com.habitflow.app.domain.usecase
 
+import java.time.DayOfWeek
 import java.time.LocalDate
 
 object StreakCalculator {
 
-    // Calculates consecutive days completed up to today (or yesterday if today is not completed yet)
+    private val ALL_DAYS: Set<DayOfWeek> = DayOfWeek.entries.toSet()
+
+    // Consecutive scheduled days completed, ending today (or the last scheduled day
+    // if today isn't done yet). Days outside activeDays neither add to nor break the streak.
     fun calculateCurrentStreak(
         completedDates: Set<LocalDate>,
-        today: LocalDate = LocalDate.now()
+        today: LocalDate = LocalDate.now(),
+        activeDays: Set<DayOfWeek> = ALL_DAYS
     ): Int {
-        if (completedDates.isEmpty()) return 0
+        if (completedDates.isEmpty() || activeDays.isEmpty()) return 0
 
-        var checkDate = today
-        // If today is not completed, check if yesterday was completed to keep the active streak open
-        if (!completedDates.contains(today)) {
-            checkDate = today.minusDays(1)
-        }
+        var date = today
+        if (date !in completedDates) date = date.minusDays(1)
 
         var streak = 0
-        while (completedDates.contains(checkDate)) {
+        while (true) {
+            if (date.dayOfWeek !in activeDays && date !in completedDates) {
+                date = date.minusDays(1)   // rest day: skip
+                continue
+            }
+            if (date !in completedDates) break
             streak++
-            checkDate = checkDate.minusDays(1)
+            date = date.minusDays(1)
         }
-
         return streak
     }
 
-    // Calculates the longest consecutive streak in history
-    fun calculateBestStreak(completedDates: Set<LocalDate>): Int {
-        if (completedDates.isEmpty()) return 0
+    // Longest run of consecutive scheduled days completed.
+    fun calculateBestStreak(
+        completedDates: Set<LocalDate>,
+        activeDays: Set<DayOfWeek> = ALL_DAYS
+    ): Int {
+        if (completedDates.isEmpty() || activeDays.isEmpty()) return 0
 
-        val sortedDates = completedDates.sorted()
-        var maxStreak = 0
-        var currentRun = 0
-        var previousDate: LocalDate? = null
-
-        for (date in sortedDates) {
-            if (previousDate == null || date == previousDate.plusDays(1)) {
-                currentRun++
-            } else if (date != previousDate) {
-                currentRun = 1
+        var best = 0
+        var run = 0
+        for (date in completedDates.sorted()) {
+            // Find the previous scheduled day before this one
+            var prev = date.minusDays(1)
+            var guard = 0
+            while (prev.dayOfWeek !in activeDays && guard < 7) {
+                prev = prev.minusDays(1)
+                guard++
             }
-            previousDate = date
-            if (currentRun > maxStreak) {
-                maxStreak = currentRun
-            }
+            run = if (prev in completedDates) run + 1 else 1
+            if (run > best) best = run
         }
-
-        return maxStreak
+        return best
     }
 }

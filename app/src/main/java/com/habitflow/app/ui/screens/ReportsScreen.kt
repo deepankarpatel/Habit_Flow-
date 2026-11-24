@@ -96,7 +96,7 @@ fun ReportsScreen(
                     colors = CardDefaults.cardColors(containerColor = Color.White)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text(text = "Current Streak", fontSize = 12.sp, color = Muted)
+                        Text(text = "Active Streak", fontSize = 12.sp, color = Muted)
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(text = "🔥 $currentStreak days", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Dark)
                         Spacer(modifier = Modifier.height(2.dp))

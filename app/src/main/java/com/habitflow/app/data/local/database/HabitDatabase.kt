@@ -13,7 +13,7 @@ import com.habitflow.app.data.local.entity.HabitEntity
 @Database(
     entities = [HabitEntity::class, HabitCompletionEntity::class],
     version = 3,
-    exportSchema = false
+    exportSchema = true
 )
 abstract class HabitDatabase : RoomDatabase() {
 
@@ -34,7 +34,7 @@ abstract class HabitDatabase : RoomDatabase() {
                     HabitDatabase::class.java,
                     "habitflow_database"
                 )
-                    .fallbackToDestructiveMigration(true)
+
                     .build()
 
                 INSTANCE = instance

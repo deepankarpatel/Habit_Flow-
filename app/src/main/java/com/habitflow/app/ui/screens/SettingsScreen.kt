@@ -27,6 +27,7 @@ fun SettingsScreen(
     onNotificationsChange: (Boolean) -> Unit = {},
     onExportBackup: () -> Unit = {},
     onImportBackup: (String) -> Unit = {},
+    onImportFromFile: () -> Unit = {},
     onResetData: () -> Unit = {},
     bottomBar: @Composable () -> Unit
 ) {
@@ -157,6 +158,14 @@ fun SettingsScreen(
                     }
 
                     Spacer(modifier = Modifier.height(10.dp))
+
+                    OutlinedButton(
+                        onClick = onImportFromFile,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(text = "Import from File", color = Dark, fontWeight = FontWeight.SemiBold)
+                    }
 
                     OutlinedButton(
                         onClick = { showResetDialog = true },

@@ -124,11 +124,10 @@ class HabitRepository(
         )
     }
 
-    // Save a new habit
-    suspend fun insertHabit(habit: Habit) {
-        habitDao.insertHabit(habit.toHabitEntity())
+    // Save a new habit and return its generated id
+    suspend fun insertHabit(habit: Habit): Int {
+        return habitDao.insertHabit(habit.toHabitEntity()).toInt()
     }
-
     // Update an existing habit
     suspend fun updateHabit(habit: Habit) {
         habitDao.updateHabit(habit.toHabitEntity())
@@ -138,5 +137,12 @@ class HabitRepository(
     suspend fun deleteHabit(habit: Habit) {
         completionDao.deleteCompletionsForHabit(habit.id)
         habitDao.deleteHabit(habit.toHabitEntity())
+    }
+
+    // Observe the dates on which one specific habit was completed
+    fun getCompletedDatesForHabit(habitId: Int): Flow<Set<LocalDate>> {
+        return completionDao.getCompletedDatesForHabit(habitId).map { dates ->
+            dates.mapNotNull { runCatching { LocalDate.parse(it) }.getOrNull() }.toSet()
+        }
     }
 }

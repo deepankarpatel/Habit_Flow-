@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import kotlinx.coroutines.flow.Flow
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HabitViewModel(
@@ -59,8 +60,15 @@ class HabitViewModel(
         userPreferencesRepository.setDarkTheme(enabled)
     }
 
-    fun setNotificationsEnabled(enabled: Boolean) {
+    fun completedDatesForHabit(habitId: Int): Flow<Set<LocalDate>> =
+        repository.getCompletedDatesForHabit(habitId)
+
+    fun setNotificationsEnabled(context: Context, enabled: Boolean) {
         userPreferencesRepository.setNotificationsEnabled(enabled)
+        viewModelScope.launch {
+            if (enabled) ReminderScheduler.rescheduleAll(context)
+            else ReminderScheduler.cancelAll(context)
+        }
     }
 
     // Increment progress for a habit
@@ -87,8 +95,8 @@ class HabitViewModel(
     // Add a habit to the database and schedule its reminder
     fun addHabit(context: Context, habit: Habit) {
         viewModelScope.launch {
-            repository.insertHabit(habit)
-            ReminderScheduler.scheduleHabitReminder(context, habit)
+            val newId = repository.insertHabit(habit)
+            ReminderScheduler.scheduleHabitReminder(context, habit.copy(id = newId))
         }
     }
 
@@ -133,15 +141,17 @@ class HabitViewModel(
         }
     }
 
-    fun importBackup(jsonString: String, onResult: (Boolean) -> Unit) {
+    fun importBackup(context: Context, jsonString: String, onResult: (Boolean) -> Unit) {
         viewModelScope.launch {
             val success = backupRestoreManager.importBackupJson(jsonString)
+            if (success) ReminderScheduler.rescheduleAll(context)
             onResult(success)
         }
     }
 
-    fun resetAllData() {
+    fun resetAllData(context: Context) {
         viewModelScope.launch {
+            ReminderScheduler.cancelAll(context)
             backupRestoreManager.resetAllData()
         }
     }
