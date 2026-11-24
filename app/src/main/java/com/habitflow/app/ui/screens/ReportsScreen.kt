@@ -1,19 +1,20 @@
 package com.habitflow.app.ui.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.habitflow.app.domain.model.HabitItemUiState
+import com.habitflow.app.domain.usecase.StreakCalculator
+import com.habitflow.app.ui.components.MonthlyCalendarView
+import java.time.LocalDate
 
 private val Background = Color(0xFFF7F6F1)
 private val Green = Color(0xFF315C48)
@@ -23,6 +24,8 @@ private val Muted = Color(0xFF858B85)
 @Composable
 fun ReportsScreen(
     habitItems: List<HabitItemUiState>,
+    completedDates: Set<LocalDate> = emptySet(),
+    onDateSelected: (String) -> Unit = {},
     bottomBar: @Composable () -> Unit
 ) {
     val totalHabits = habitItems.size
@@ -32,6 +35,10 @@ fun ReportsScreen(
     } else {
         0
     }
+
+    val currentStreak = StreakCalculator.calculateCurrentStreak(completedDates)
+    val bestStreak = StreakCalculator.calculateBestStreak(completedDates)
+    val totalDays = completedDates.size
 
     Scaffold(
         containerColor = Background,
@@ -82,25 +89,47 @@ fun ReportsScreen(
                     }
                 }
 
-                // Active Habits Count Card
+                // Streak Card
                 Card(
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(18.dp),
                     colors = CardDefaults.cardColors(containerColor = Color.White)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text(text = "Total Habits", fontSize = 12.sp, color = Muted)
+                        Text(text = "Current Streak", fontSize = 12.sp, color = Muted)
                         Spacer(modifier = Modifier.height(6.dp))
-                        Text(text = "$totalHabits", fontSize = 26.sp, fontWeight = FontWeight.Bold, color = Dark)
+                        Text(text = "🔥 $currentStreak days", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Dark)
                         Spacer(modifier = Modifier.height(2.dp))
-                        Text(text = "Active routines", fontSize = 11.sp, color = Muted)
+                        Text(text = "Best: $bestStreak days", fontSize = 11.sp, color = Muted)
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Total Days Card
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(18.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column {
+                        Text(text = "Total Active History", fontSize = 12.sp, color = Muted)
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(text = "⭐ $totalDays Days Recorded", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Dark)
                     }
                 }
             }
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Consistency Overview Card
+            // Monthly Calendar Card
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp),
@@ -108,7 +137,7 @@ fun ReportsScreen(
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
                     Text(
-                        text = "Weekly Consistency",
+                        text = "Monthly Overview",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = Dark
@@ -116,35 +145,10 @@ fun ReportsScreen(
 
                     Spacer(modifier = Modifier.height(14.dp))
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        listOf("M", "T", "W", "T", "F", "S", "S").forEachIndexed { idx, day ->
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(36.dp)
-                                        .background(
-                                            if (idx < 5 && overallPercentage > 0) Green else Color(0xFFF0F1ED),
-                                            shape = RoundedCornerShape(10.dp)
-                                        ),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    if (idx < 5 && overallPercentage > 0) {
-                                        Text(text = "✓", color = Color.White, fontSize = 14.sp)
-                                    }
-                                }
-
-                                Spacer(modifier = Modifier.height(6.dp))
-
-                                Text(text = day, fontSize = 12.sp, color = Muted)
-                            }
-                        }
-                    }
+                    MonthlyCalendarView(
+                        completedDates = completedDates,
+                        onDateSelected = onDateSelected
+                    )
                 }
             }
         }

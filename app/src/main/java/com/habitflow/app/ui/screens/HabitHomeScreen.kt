@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.habitflow.app.domain.model.Habit
 import com.habitflow.app.domain.model.HabitItemUiState
+import com.habitflow.app.ui.components.CalendarStrip
 import com.habitflow.app.ui.components.EmptyHabitsState
 import com.habitflow.app.ui.components.HabitCard
 import java.time.LocalDate
@@ -32,6 +33,8 @@ private val Muted = Color(0xFF858B85)
 @Composable
 fun HabitHomeScreen(
     habitItems: List<HabitItemUiState>,
+    selectedDate: String,
+    onDateSelected: (String) -> Unit,
     onAddHabit: () -> Unit,
     onIncrement: (habitId: Int, target: Int) -> Unit,
     onDecrement: (habitId: Int, target: Int) -> Unit,
@@ -55,9 +58,11 @@ fun HabitHomeScreen(
         else -> "Good evening"
     }
 
-    val today = LocalDate.now().format(
-        DateTimeFormatter.ofPattern("EEEE, dd MMMM")
-    )
+    val todayFormatted = try {
+        LocalDate.parse(selectedDate).format(DateTimeFormatter.ofPattern("EEEE, dd MMMM"))
+    } catch (_: Exception) {
+        LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE, dd MMMM"))
+    }
 
     Scaffold(
         containerColor = Background,
@@ -92,15 +97,23 @@ fun HabitHomeScreen(
             Spacer(modifier = Modifier.height(6.dp))
 
             Text(
-                text = today,
+                text = todayFormatted,
                 fontSize = 14.sp,
                 color = Muted
             )
 
-            Spacer(modifier = Modifier.height(28.dp))
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Calendar Strip
+            CalendarStrip(
+                selectedDate = selectedDate,
+                onDateSelected = onDateSelected
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "TODAY'S PROGRESS",
+                text = "DAILY PROGRESS",
                 fontSize = 12.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = Muted,
@@ -242,6 +255,8 @@ fun HabitHomeScreenPreview() {
 
     HabitHomeScreen(
         habitItems = sampleItems,
+        selectedDate = "2026-03-09",
+        onDateSelected = {},
         onAddHabit = {},
         onIncrement = { _, _ -> },
         onDecrement = { _, _ -> },

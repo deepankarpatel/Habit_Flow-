@@ -10,6 +10,7 @@ import com.habitflow.app.domain.model.HabitItemUiState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
+import java.time.LocalDate
 
 class HabitRepository(
     private val habitDao: HabitDao,
@@ -46,6 +47,19 @@ class HabitRepository(
     fun getAllHabits(): Flow<List<Habit>> {
         return habitDao.getAllHabits().map { entities ->
             entities.map { it.toHabit() }
+        }
+    }
+
+    // Observe set of dates with at least one completed record
+    fun getAllCompletedDates(): Flow<Set<LocalDate>> {
+        return completionDao.getAllCompletedRecords().map { list ->
+            list.mapNotNull {
+                try {
+                    java.time.LocalDate.parse(it.date)
+                } catch (_: Exception) {
+                    null
+                }
+            }.toSet()
         }
     }
 
