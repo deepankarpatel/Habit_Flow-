@@ -12,12 +12,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.habitflow.app.ui.theme.AppTheme
 
-private val Background = Color(0xFFF7F6F1)
-private val Green = Color(0xFF315C48)
-private val Dark = Color(0xFF252B27)
-private val Muted = Color(0xFF858B85)
-private val Red = Color(0xFFD32F2F)
+private val Background: Color @Composable get() = AppTheme.colors.background
+private val Green: Color @Composable get() = AppTheme.colors.accent
+private val Dark: Color @Composable get() = AppTheme.colors.text
+private val Muted: Color @Composable get() = AppTheme.colors.muted
+private val Red: Color @Composable get() = AppTheme.colors.danger
 
 @Composable
 fun SettingsScreen(
@@ -68,7 +69,7 @@ fun SettingsScreen(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White)
+                colors = CardDefaults.cardColors(containerColor = AppTheme.colors.card)
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
                     Text(
@@ -98,7 +99,7 @@ fun SettingsScreen(
                         )
                     }
 
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color(0xFFF0F1ED))
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = AppTheme.colors.divider)
 
                     // Dark Theme Toggle
                     Row(
@@ -126,7 +127,7 @@ fun SettingsScreen(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White)
+                colors = CardDefaults.cardColors(containerColor = AppTheme.colors.card)
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
                     Text(
@@ -184,7 +185,7 @@ fun SettingsScreen(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White)
+                colors = CardDefaults.cardColors(containerColor = AppTheme.colors.card)
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
                     Text(

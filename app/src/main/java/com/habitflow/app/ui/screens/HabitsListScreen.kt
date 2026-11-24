@@ -15,10 +15,13 @@ import androidx.compose.ui.unit.sp
 import com.habitflow.app.domain.model.HabitItemUiState
 import com.habitflow.app.ui.components.EmptyHabitsState
 import com.habitflow.app.ui.components.HabitCard
+import com.habitflow.app.ui.theme.AppTheme
 
-private val Background = Color(0xFFF7F6F1)
-private val Green = Color(0xFF315C48)
-private val Dark = Color(0xFF252B27)
+private val Background: Color @Composable get() = AppTheme.colors.background
+private val Green: Color @Composable get() = AppTheme.colors.accent
+private val Dark: Color @Composable get() = AppTheme.colors.text
+private val Muted: Color @Composable get() = AppTheme.colors.muted
+private val Red: Color @Composable get() = AppTheme.colors.danger
 
 @Composable
 fun HabitsListScreen(
@@ -57,7 +60,7 @@ fun HabitsListScreen(
                     Text(
                         text = "${habitItems.size} habit(s) configured",
                         fontSize = 13.sp,
-                        color = Color(0xFF858B85)
+                        color = AppTheme.colors.muted
                     )
                 }
 

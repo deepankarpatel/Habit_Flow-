@@ -25,12 +25,13 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.Locale
+import com.habitflow.app.ui.theme.AppTheme
 
-private val Green = Color(0xFF315C48)
-private val Dark = Color(0xFF252B27)
-private val Muted = Color(0xFF858B85)
-private val Background = Color(0xFFF7F6F1)
-private val Red = Color(0xFFD32F2F)
+private val Background: Color @Composable get() = AppTheme.colors.background
+private val Green: Color @Composable get() = AppTheme.colors.accent
+private val Dark: Color @Composable get() = AppTheme.colors.text
+private val Muted: Color @Composable get() = AppTheme.colors.muted
+private val Red: Color @Composable get() = AppTheme.colors.danger
 
 @Composable
 fun HabitDetailScreen(
@@ -123,7 +124,7 @@ fun HabitDetailScreen(
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(18.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White)
+            colors = CardDefaults.cardColors(containerColor = AppTheme.colors.card)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth().padding(18.dp),

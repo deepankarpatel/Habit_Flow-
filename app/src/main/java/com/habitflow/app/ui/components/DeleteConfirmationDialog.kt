@@ -11,10 +11,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.habitflow.app.ui.theme.AppTheme
 
-private val Red = Color(0xFFD32F2F)
-private val Dark = Color(0xFF252B27)
-private val Muted = Color(0xFF858B85)
+private val Background: Color @Composable get() = AppTheme.colors.background
+private val Green: Color @Composable get() = AppTheme.colors.accent
+private val Dark: Color @Composable get() = AppTheme.colors.text
+private val Muted: Color @Composable get() = AppTheme.colors.muted
+private val Red: Color @Composable get() = AppTheme.colors.danger
 
 @Composable
 fun DeleteConfirmationDialog(
@@ -67,6 +70,6 @@ fun DeleteConfirmationDialog(
             }
         },
         shape = RoundedCornerShape(20.dp),
-        containerColor = Color.White
+        containerColor = AppTheme.colors.card
     )
 }

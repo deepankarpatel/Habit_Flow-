@@ -39,6 +39,7 @@ import com.habitflow.app.ui.screens.SettingsScreen
 import com.habitflow.app.ui.theme.HabitFlowTheme
 import com.habitflow.app.ui.viewmodel.HabitViewModel
 import java.time.LocalDate
+import com.habitflow.app.ui.theme.AppTheme
 
 class MainActivity : ComponentActivity() {
 
@@ -156,7 +157,7 @@ class MainActivity : ComponentActivity() {
                 var selectedHabitForDetail by remember { mutableStateOf<HabitItemUiState?>(null) }
 
                 val bottomBar: @Composable () -> Unit = {
-                    NavigationBar(containerColor = Color.White) {
+                    NavigationBar(containerColor = AppTheme.colors.card) {
                         val tabs = listOf(
                             "Home" to "⌂",
                             "Habits" to "✓",

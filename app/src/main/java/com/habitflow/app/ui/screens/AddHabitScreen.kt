@@ -19,11 +19,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.habitflow.app.domain.model.Habit
 import com.habitflow.app.ui.theme.HabitFlowTheme
+import com.habitflow.app.ui.theme.AppTheme
 
-private val Green = Color(0xFF315C48)
-private val Dark = Color(0xFF252B27)
-private val Muted = Color(0xFF858B85)
-private val Background = Color(0xFFF7F6F1)
+private val Green: Color @Composable get() = AppTheme.colors.accent
+private val Dark: Color @Composable get() = AppTheme.colors.text
+private val Muted: Color @Composable get() = AppTheme.colors.muted
+private val Background: Color @Composable get() = AppTheme.colors.background
 
 @Composable
 fun AddHabitScreen(

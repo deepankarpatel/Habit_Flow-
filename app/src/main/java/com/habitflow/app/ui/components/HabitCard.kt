@@ -21,10 +21,14 @@ import com.habitflow.app.domain.model.Habit
 import com.habitflow.app.domain.model.HabitItemUiState
 import com.habitflow.app.ui.theme.HabitFlowTheme
 
-private val Green = Color(0xFF315C48)
-private val LightGreen = Color(0xFFE8F0EC)
-private val Dark = Color(0xFF252B27)
-private val Muted = Color(0xFF858B85)
+import com.habitflow.app.ui.theme.AppTheme
+
+private val Background: Color @Composable get() = AppTheme.colors.background
+private val Green: Color @Composable get() = AppTheme.colors.accent
+private val Dark: Color @Composable get() = AppTheme.colors.text
+private val Muted: Color @Composable get() = AppTheme.colors.muted
+private val Red: Color @Composable get() = AppTheme.colors.danger
+private val LightGreen: Color @Composable get() = AppTheme.colors.accentSoft
 
 @Composable
 fun HabitCard(
@@ -45,7 +49,7 @@ fun HabitCard(
             ),
         shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = AppTheme.colors.card
         )
     ) {
         Column(
@@ -59,7 +63,7 @@ fun HabitCard(
                     modifier = Modifier
                         .size(48.dp)
                         .clip(RoundedCornerShape(14.dp))
-                        .background(Color(0xFFF1F4EF)),
+                        .background(AppTheme.colors.track),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -100,7 +104,7 @@ fun HabitCard(
                         modifier = Modifier
                             .size(32.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFFF0F1ED))
+                            .background(AppTheme.colors.divider)
                             .clickable { onDecrement() },
                         contentAlignment = Alignment.Center
                     ) {
@@ -135,7 +139,7 @@ fun HabitCard(
                             .size(32.dp)
                             .clip(CircleShape)
                             .background(
-                                if (habitItem.isCompleted) Green else Color(0xFFF0F1ED)
+                                if (habitItem.isCompleted) Green else AppTheme.colors.divider
                             )
                             .clickable { onToggleComplete() },
                         contentAlignment = Alignment.Center
@@ -158,14 +162,14 @@ fun HabitCard(
                     .fillMaxWidth()
                     .height(5.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFFF0F1ED))
+                    .background(AppTheme.colors.divider)
             ) {
                 Box(
                     modifier = Modifier
                         .fillMaxHeight()
                         .fillMaxWidth(habitItem.progressFraction)
                         .clip(CircleShape)
-                        .background(if (habitItem.isCompleted) Green else Color(0xFF689F84))
+                        .background(if (habitItem.isCompleted) Green else AppTheme.colors.secondary)
                 )
             }
         }

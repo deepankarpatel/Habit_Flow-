@@ -24,11 +24,13 @@ import com.habitflow.app.ui.components.HabitCard
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import com.habitflow.app.ui.theme.AppTheme
 
-private val Background = Color(0xFFF7F6F1)
-private val Green = Color(0xFF315C48)
-private val Dark = Color(0xFF252B27)
-private val Muted = Color(0xFF858B85)
+private val Background: Color @Composable get() = AppTheme.colors.background
+private val Green: Color @Composable get() = AppTheme.colors.accent
+private val Dark: Color @Composable get() = AppTheme.colors.text
+private val Muted: Color @Composable get() = AppTheme.colors.muted
+private val Red: Color @Composable get() = AppTheme.colors.danger
 
 @Composable
 fun HabitHomeScreen(
@@ -126,7 +128,7 @@ fun HabitHomeScreen(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(22.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = Color.White
+                    containerColor = AppTheme.colors.card
                 )
             ) {
                 Column(
@@ -157,7 +159,7 @@ fun HabitHomeScreen(
                             .fillMaxWidth()
                             .height(9.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFFE9EDE9))
+                            .background(AppTheme.colors.track)
                     ) {
                         Box(
                             modifier = Modifier

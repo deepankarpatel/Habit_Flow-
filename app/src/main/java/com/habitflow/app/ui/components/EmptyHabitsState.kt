@@ -16,11 +16,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.habitflow.app.ui.theme.AppTheme
 
-private val Green = Color(0xFF315C48)
-private val Dark = Color(0xFF252B27)
-private val Muted = Color(0xFF858B85)
-
+private val Background: Color @Composable get() = AppTheme.colors.background
+private val Green: Color @Composable get() = AppTheme.colors.accent
+private val Dark: Color @Composable get() = AppTheme.colors.text
+private val Muted: Color @Composable get() = AppTheme.colors.muted
+private val Red: Color @Composable get() = AppTheme.colors.danger
 @Composable
 fun EmptyHabitsState(
     onAddHabit: () -> Unit,
@@ -36,7 +38,7 @@ fun EmptyHabitsState(
             modifier = Modifier
                 .size(72.dp)
                 .clip(CircleShape)
-                .background(Color(0xFFE8F0EC)),
+                .background(AppTheme.colors.accentSoft),
             contentAlignment = Alignment.Center
         ) {
             Text(
