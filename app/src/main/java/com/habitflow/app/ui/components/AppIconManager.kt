@@ -3,17 +3,16 @@ package com.habitflow.app.util
 import android.content.ComponentName
 import android.content.Context
 import android.content.pm.PackageManager
-import androidx.compose.ui.graphics.Color
+import com.habitflow.app.R
 
 enum class AppIcon(
     val alias: String,
     val label: String,
-    val previewBg: Color,
-    val previewFg: Color?   // null = show the Bun logo image
+    val iconResId: Int
 ) {
-    BUN("IconBun", "Bun", Color(0xFFFBF6E9), null),
-    SUNSET("IconPenguin", "Penguin", Color(0xFFFBF6E9),null),
-    MIDNIGHT("IconGIF", "GIF", Color(0xFFFBF6E9), null)
+    BUN("IconBun", "Bun", R.drawable.main_icon2),
+    SUNSET("IconSunset", "Penguin", R.drawable.logo_penguin),
+    MIDNIGHT("IconMidnight", "GIF", R.drawable.logo_gif)
 }
 
 object AppIconManager {

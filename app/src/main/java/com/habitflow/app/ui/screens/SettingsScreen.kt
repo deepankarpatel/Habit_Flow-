@@ -17,7 +17,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -170,30 +169,23 @@ fun SettingsScreen(
                                 Box(
                                     modifier = Modifier
                                         .size(64.dp)
-                                        .clip(CircleShape)
-                                        .background(icon.previewBg)
+                                        .clip(RoundedCornerShape(16.dp))
+                                        .background(AppTheme.colors.accentSoft)
                                         .border(
                                             width = if (selected) 3.dp else 1.dp,
                                             color = if (selected) Green else AppTheme.colors.divider,
-                                            shape = CircleShape
+                                            shape = RoundedCornerShape(16.dp)
                                         ),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    if (icon.previewFg == null) {
-                                        Image(
-                                            painter = painterResource(R.drawable.splash_logo),
-                                            contentDescription = icon.label,
-                                            contentScale = ContentScale.Fit,
-                                            modifier = Modifier.fillMaxSize()
-                                        )
-                                    } else {
-                                        Text(
-                                            text = "✓",
-                                            fontSize = 28.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = icon.previewFg
-                                        )
-                                    }
+                                    Image(
+                                        painter = painterResource(icon.iconResId),
+                                        contentDescription = icon.label,
+                                        contentScale = ContentScale.Crop,
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .clip(RoundedCornerShape(16.dp))
+                                    )
                                 }
                                 Spacer(modifier = Modifier.height(6.dp))
                                 Text(
