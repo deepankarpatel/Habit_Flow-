@@ -40,6 +40,19 @@ import com.habitflow.app.ui.theme.HabitFlowTheme
 import com.habitflow.app.ui.viewmodel.HabitViewModel
 import java.time.LocalDate
 import com.habitflow.app.ui.theme.AppTheme
+import androidx.compose.runtime.saveable.rememberSaveable
+import com.habitflow.app.ui.components.MotivationDialog
+import com.habitflow.app.ui.components.motivationQuotes
+import kotlin.random.Random
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
+import com.habitflow.app.util.AppIcon
+import com.habitflow.app.util.AppIconManager
 
 class MainActivity : ComponentActivity() {
 
@@ -104,7 +117,11 @@ class MainActivity : ComponentActivity() {
                                 }
                                 Toast.makeText(context, "Backup saved.", Toast.LENGTH_SHORT).show()
                             } catch (_: Exception) {
-                                Toast.makeText(context, "Could not save backup.", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(
+                                    context,
+                                    "Could not save backup.",
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
                         }
                     }
@@ -118,10 +135,13 @@ class MainActivity : ComponentActivity() {
                             context.contentResolver.openInputStream(uri)?.use {
                                 it.readBytes().toString(Charsets.UTF_8)
                             }
-                        } catch (_: Exception) { null }
+                        } catch (_: Exception) {
+                            null
+                        }
 
                         if (json == null) {
-                            Toast.makeText(context, "Could not read file.", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Could not read file.", Toast.LENGTH_SHORT)
+                                .show()
                         } else {
                             habitViewModel.importBackup(context, json) { success ->
                                 Toast.makeText(
@@ -154,6 +174,7 @@ class MainActivity : ComponentActivity() {
                 // Navigation state
                 var selectedTab by remember { mutableIntStateOf(0) }
                 var showAddHabit by remember { mutableStateOf(false) }
+                var currentIcon by remember { mutableStateOf(AppIconManager.current(context)) }
                 var selectedHabitForDetail by remember { mutableStateOf<HabitItemUiState?>(null) }
 
                 val bottomBar: @Composable () -> Unit = {
@@ -176,132 +197,197 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                when {
-                    showAddHabit -> {
-                        AddHabitScreen(
-                            onBack = {
-                                showAddHabit = false
-                            },
-                            onSave = { newHabit ->
-                                habitViewModel.addHabit(context, newHabit)
-                                showAddHabit = false
-                            }
-                        )
-                    }
+                var showQuote by rememberSaveable { mutableStateOf(true) }
+                val quoteIndex = rememberSaveable { Random.nextInt(motivationQuotes.size) }
 
-                    selectedHabitForDetail != null -> {
-                        val detailId = selectedHabitForDetail!!.habit.id
-                        val habitCompletedDates by remember(detailId) {
-                            habitViewModel.completedDatesForHabit(detailId)
-                        }.collectAsStateWithLifecycle(initialValue = emptySet())
+                if (showQuote) {
+                    MotivationDialog(
+                        quote = motivationQuotes[quoteIndex],
+                        onDismiss = { showQuote = false }
+                    )
+                }
 
-                        HabitDetailScreen(
-                            habitItem = selectedHabitForDetail!!,
-                            completedDates = habitCompletedDates,
-                            onBack = { selectedHabitForDetail = null },
-                            onSave = { updatedHabit ->
-                                habitViewModel.updateHabit(context, updatedHabit)
-                                selectedHabitForDetail = null
-                            },
-                            onDelete = { habitToDelete ->
-                                habitViewModel.deleteHabit(context, habitToDelete)
-                                selectedHabitForDetail = null
-                            }
-                        )
-                    }
+                val screenKey = when {
+                    showAddHabit -> "add"
+                    selectedHabitForDetail != null -> "detail"
+                    else -> "tab$selectedTab"
+                }
 
-                    selectedTab == 0 -> {
-                        HabitHomeScreen(
-                            habitItems = habitItems,
-                            selectedDate = selectedDate,
-                            onDateSelected = { date ->
-                                habitViewModel.setSelectedDate(date)
-                            },
-                            onAddHabit = {
-                                showAddHabit = true
-                            },
-                            onIncrement = { habitId, target ->
-                                habitViewModel.incrementProgress(habitId, target)
-                            },
-                            onDecrement = { habitId, target ->
-                                habitViewModel.decrementProgress(habitId, target)
-                            },
-                            onToggleCompletion = { habitId, target ->
-                                habitViewModel.toggleCompletion(habitId, target)
-                            },
-                            onHabitClick = { clickedItem ->
-                                selectedHabitForDetail = clickedItem
-                            },
-                            bottomBar = bottomBar
-                        )
-                    }
+// Remember the last opened habit so the detail screen can animate out
+                val lastDetail = remember { mutableStateOf<HabitItemUiState?>(null) }
+                selectedHabitForDetail?.let { lastDetail.value = it }
 
-                    selectedTab == 1 -> {
-                        HabitsListScreen(
-                            habitItems = habitItems,
-                            onAddHabit = {
-                                showAddHabit = true
-                            },
-                            onIncrement = { habitId, target ->
-                                habitViewModel.incrementProgress(habitId, target)
-                            },
-                            onDecrement = { habitId, target ->
-                                habitViewModel.decrementProgress(habitId, target)
-                            },
-                            onToggleCompletion = { habitId, target ->
-                                habitViewModel.toggleCompletion(habitId, target)
-                            },
-                            onHabitClick = { clickedItem ->
-                                selectedHabitForDetail = clickedItem
-                            },
-                            bottomBar = bottomBar
-                        )
-                    }
+                AnimatedContent(
+                    targetState = screenKey,
+                    transitionSpec = {
+                        val toSub = targetState == "add" || targetState == "detail"
+                        val fromSub = initialState == "add" || initialState == "detail"
+                        when {
+                            toSub && !fromSub ->
+                                (fadeIn(tween(300)) + slideInVertically(tween(300)) { it / 10 }) togetherWith
+                                        fadeOut(tween(150))
 
-                    selectedTab == 2 -> {
-                        ReportsScreen(
-                            habitItems = habitItems,
-                            completedDates = completedDates,
-                            onDateSelected = { date ->
-                                habitViewModel.setSelectedDate(date)
-                                selectedTab = 0
-                            },
-                            bottomBar = bottomBar
-                        )
-                    }
+                            !toSub && fromSub ->
+                                fadeIn(tween(300)) togetherWith
+                                        (fadeOut(tween(200)) + slideOutVertically(tween(250)) { it / 10 })
 
-                    selectedTab == 3 -> {
-                        SettingsScreen(
-                            isDarkTheme = isDarkTheme,
-                            onDarkThemeChange = { enabled ->
-                                habitViewModel.setDarkTheme(enabled)
-                            },
-                            notificationsEnabled = notificationsEnabled,
-                            onNotificationsChange = { enabled ->
-                                habitViewModel.setNotificationsEnabled(context, enabled)
-                            },
+                            else ->
+                                fadeIn(tween(250)) togetherWith fadeOut(tween(150))
+                        }
+                    },
+                    label = "screen"
+                ) { screen ->
+                    when (screen) {
 
-                            onExportBackup = {
-                                exportLauncher.launch("habitflow-backup-${LocalDate.now()}.json")
-                            },
-                            onImportFromFile = {
-                                importLauncher.launch(arrayOf("*/*"))
-                            },
-                            onImportBackup = { json ->
-                                habitViewModel.importBackup(context, json) { success ->
-                                    if (success) {
-                                        Toast.makeText(context, "Data restored successfully!", Toast.LENGTH_SHORT).show()
-                                    } else {
-                                        Toast.makeText(context, "Failed to parse backup JSON.", Toast.LENGTH_SHORT).show()
-                                    }
+                        "add" -> {
+                            AddHabitScreen(
+                                onBack = {
+                                    showAddHabit = false
+                                },
+                                onSave = { newHabit ->
+                                    habitViewModel.addHabit(context, newHabit)
+                                    showAddHabit = false
                                 }
-                            },
-                            onResetData = {
-                                habitViewModel.resetAllData(context)
-                                Toast.makeText(context, "All app data reset.", Toast.LENGTH_SHORT).show()
-                            },
-                            bottomBar = bottomBar
-                        )
+                            )
+                        }
+
+                        "detail" -> {
+                            val detailId = selectedHabitForDetail!!.habit.id
+                            val habitCompletedDates by remember(detailId) {
+                                habitViewModel.completedDatesForHabit(detailId)
+                            }.collectAsStateWithLifecycle(initialValue = emptySet())
+
+                            HabitDetailScreen(
+                                habitItem = selectedHabitForDetail!!,
+                                completedDates = habitCompletedDates,
+                                onBack = { selectedHabitForDetail = null },
+                                onSave = { updatedHabit ->
+                                    habitViewModel.updateHabit(context, updatedHabit)
+                                    selectedHabitForDetail = null
+                                },
+                                onDelete = { habitToDelete ->
+                                    habitViewModel.deleteHabit(context, habitToDelete)
+                                    selectedHabitForDetail = null
+                                }
+                            )
+                        }
+
+                        "tab0" -> {
+                            HabitHomeScreen(
+                                habitItems = habitItems,
+                                selectedDate = selectedDate,
+                                onDateSelected = { date ->
+                                    habitViewModel.setSelectedDate(date)
+                                },
+                                onAddHabit = {
+                                    showAddHabit = true
+                                },
+                                onIncrement = { habitId, target ->
+                                    habitViewModel.incrementProgress(habitId, target)
+                                },
+                                onDecrement = { habitId, target ->
+                                    habitViewModel.decrementProgress(habitId, target)
+                                },
+                                onToggleCompletion = { habitId, target ->
+                                    habitViewModel.toggleCompletion(habitId, target)
+                                },
+                                onHabitClick = { clickedItem ->
+                                    selectedHabitForDetail = clickedItem
+                                },
+                                bottomBar = bottomBar
+                            )
+                        }
+
+                        "tab1" -> {
+                            HabitsListScreen(
+                                habitItems = habitItems,
+                                onAddHabit = {
+                                    showAddHabit = true
+                                },
+                                onIncrement = { habitId, target ->
+                                    habitViewModel.incrementProgress(habitId, target)
+                                },
+                                onDecrement = { habitId, target ->
+                                    habitViewModel.decrementProgress(habitId, target)
+                                },
+                                onToggleCompletion = { habitId, target ->
+                                    habitViewModel.toggleCompletion(habitId, target)
+                                },
+                                onHabitClick = { clickedItem ->
+                                    selectedHabitForDetail = clickedItem
+                                },
+                                bottomBar = bottomBar
+                            )
+                        }
+
+                        "tab2" -> {
+                            ReportsScreen(
+                                habitItems = habitItems,
+                                completedDates = completedDates,
+                                onDateSelected = { date ->
+                                    habitViewModel.setSelectedDate(date)
+                                    selectedTab = 0
+                                },
+                                bottomBar = bottomBar
+                            )
+                        }
+
+                        "tab3" -> {
+                            SettingsScreen(
+                                isDarkTheme = isDarkTheme,
+                                onDarkThemeChange = { enabled ->
+                                    habitViewModel.setDarkTheme(enabled)
+                                },
+                                notificationsEnabled = notificationsEnabled,
+                                onNotificationsChange = { enabled ->
+                                    habitViewModel.setNotificationsEnabled(context, enabled)
+                                },
+
+                                selectedIcon = currentIcon,
+                                onIconSelected = { icon ->
+                                    AppIconManager.apply(context, icon)
+                                    currentIcon = icon
+                                    Toast.makeText(
+                                        context,
+                                        "Icon changed. Your launcher may take a few seconds to update.",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                },
+
+                                onExportBackup = {
+                                    exportLauncher.launch("habitflow-backup-${LocalDate.now()}.json")
+                                },
+                                onImportFromFile = {
+                                    importLauncher.launch(arrayOf("*/*"))
+                                },
+                                onImportBackup = { json ->
+                                    habitViewModel.importBackup(context, json) { success ->
+                                        if (success) {
+                                            Toast.makeText(
+                                                context,
+                                                "Data restored successfully!",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        } else {
+                                            Toast.makeText(
+                                                context,
+                                                "Failed to parse backup JSON.",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    }
+                                },
+                                onResetData = {
+                                    habitViewModel.resetAllData(context)
+                                    Toast.makeText(
+                                        context,
+                                        "All app data reset.",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                },
+                                bottomBar = bottomBar
+                            )
+                        }
                     }
                 }
             }

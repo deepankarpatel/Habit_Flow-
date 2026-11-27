@@ -6,6 +6,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -16,6 +17,9 @@ import com.habitflow.app.domain.usecase.StreakCalculator
 import com.habitflow.app.ui.components.MonthlyCalendarView
 import java.time.LocalDate
 import com.habitflow.app.ui.theme.AppTheme
+import com.habitflow.app.ui.components.PulsingFlame
+import com.habitflow.app.ui.components.rememberCountUp
+
 
 private val Background: Color @Composable get() = AppTheme.colors.background
 private val Green: Color @Composable get() = AppTheme.colors.accent
@@ -41,6 +45,9 @@ fun ReportsScreen(
     val currentStreak = StreakCalculator.calculateCurrentStreak(completedDates)
     val bestStreak = StreakCalculator.calculateBestStreak(completedDates)
     val totalDays = completedDates.size
+    val animatedPercent = rememberCountUp(overallPercentage)
+    val animatedStreak = rememberCountUp(currentStreak)
+    val animatedTotal = rememberCountUp(totalDays)
 
     Scaffold(
         containerColor = Background,
@@ -85,7 +92,7 @@ fun ReportsScreen(
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(text = "Completion", fontSize = 12.sp, color = Muted)
                         Spacer(modifier = Modifier.height(6.dp))
-                        Text(text = "$overallPercentage%", fontSize = 26.sp, fontWeight = FontWeight.Bold, color = Green)
+                        Text(text = "${animatedPercent}%", fontSize = 26.sp, fontWeight = FontWeight.Bold, color = Green)
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(text = "$completedToday of $totalHabits done", fontSize = 11.sp, color = Muted)
                     }
@@ -100,7 +107,11 @@ fun ReportsScreen(
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(text = "Active Streak", fontSize = 12.sp, color = Muted)
                         Spacer(modifier = Modifier.height(6.dp))
-                        Text(text = "🔥 $currentStreak days", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Dark)
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            PulsingFlame(active = currentStreak > 0)
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(text = "$animatedStreak days", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Dark)
+                        }
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(text = "Best: $bestStreak days", fontSize = 11.sp, color = Muted)
                     }

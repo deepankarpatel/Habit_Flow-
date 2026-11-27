@@ -20,32 +20,31 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Color(0xFF4E8B6E),
-    secondary = Color(0xFF689F84),
-    tertiary = Color(0xFFA2C7B3),
-    background = Color(0xFF181C19),
-    surface = Color(0xFF222723),
-    surfaceContainerHigh = Color(0xFF2A302B),   // dialogs
-    secondaryContainer = Color(0xFF2F4A3C),     // nav bar selection pill
-    onSecondaryContainer = Color(0xFFD7EBDF),
+    primary = Color(0xFFD9532F),
+    secondary = Color(0xFFF4A24C),
+    tertiary = Color(0xFFF4A24C),
+    background = Color(0xFF1A1412),
+    surface = Color(0xFF261E1B),
+    surfaceContainerHigh = Color(0xFF30251F),
+    secondaryContainer = Color(0xFF4A2E25),
+    onSecondaryContainer = Color(0xFFF8DDD2),
     onPrimary = Color.White,
-    onBackground = Color(0xFFE2E3DF),
-    onSurface = Color(0xFFE2E3DF)
+    onBackground = Color(0xFFF4E9E4),
+    onSurface = Color(0xFFF4E9E4)
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Color(0xFF315C48),
-    secondary = Color(0xFF689F84),
-    tertiary = Color(0xFF858B85),
-    background = Color(0xFFF7F6F1),
+    primary = Color(0xFFD9532F),
+    secondary = Color(0xFFF4A24C),
+    tertiary = Color(0xFFF4A24C),
+    background = Color(0xFFFFF8F3),
     surface = Color.White,
-    secondaryContainer = Color(0xFFE8F0EC),
-    onSecondaryContainer = Color(0xFF252B27),
+    secondaryContainer = Color(0xFFFDEBE3),
+    onSecondaryContainer = Color(0xFF2B2220),
     onPrimary = Color.White,
-    onBackground = Color(0xFF252B27),
-    onSurface = Color(0xFF252B27)
+    onBackground = Color(0xFF2B2220),
+    onSurface = Color(0xFF2B2220)
 )
-
 @Composable
 fun HabitFlowTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),

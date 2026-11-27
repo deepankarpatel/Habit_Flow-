@@ -21,29 +21,29 @@ data class AppColors(
 )
 
 val LightAppColors = AppColors(
-    background = Color(0xFFF7F6F1),
+    background = Color(0xFFFFF8F3),
     card = Color.White,
-    text = Color(0xFF252B27),
-    muted = Color(0xFF858B85),
-    accent = Color(0xFF315C48),
-    secondary = Color(0xFF689F84),
-    divider = Color(0xFFF0F1ED),
-    accentSoft = Color(0xFFE8F0EC),
-    track = Color(0xFFE9EDE9),
-    danger = Color(0xFFD32F2F)
+    text = Color(0xFF2B2220),
+    muted = Color(0xFF8A7B75),
+    accent = Color(0xFFD9532F),
+    secondary = Color(0xFFF4A24C),
+    divider = Color(0xFFF3E7E0),
+    accentSoft = Color(0xFFFDEBE3),
+    track = Color(0xFFF1E6DF),
+    danger = Color(0xFFB3261E)
 )
 
 val DarkAppColors = AppColors(
-    background = Color(0xFF181C19),
-    card = Color(0xFF222723),
-    text = Color(0xFFE2E3DF),
-    muted = Color(0xFF9AA39C),
-    accent = Color(0xFF4E8B6E),
-    secondary = Color(0xFF7DB398),
-    divider = Color(0xFF2E352F),
-    accentSoft = Color(0xFF263A30),
-    track = Color(0xFF2B322C),
-    danger = Color(0xFFE57373)
+    background = Color(0xFF1A1412),
+    card = Color(0xFF261E1B),
+    text = Color(0xFFF4E9E4),
+    muted = Color(0xFFB3A199),
+    accent = Color(0xFFD9532F),
+    secondary = Color(0xFFF4A24C),
+    divider = Color(0xFF372B26),
+    accentSoft = Color(0xFF3A2620),
+    track = Color(0xFF352A26),
+    danger = Color(0xFFEF8A80)
 )
 
 val LocalAppColors = staticCompositionLocalOf { LightAppColors }

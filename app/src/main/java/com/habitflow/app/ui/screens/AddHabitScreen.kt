@@ -83,6 +83,9 @@ fun AddHabitScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(Background)
+            .statusBarsPadding()
+            .navigationBarsPadding()
+            .imePadding()
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 22.dp)
             .padding(top = 25.dp, bottom = 30.dp)

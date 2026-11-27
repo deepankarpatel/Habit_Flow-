@@ -25,6 +25,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import com.habitflow.app.ui.theme.AppTheme
+import com.habitflow.app.ui.components.AnimatedEntrance
 
 private val Background: Color @Composable get() = AppTheme.colors.background
 private val Green: Color @Composable get() = AppTheme.colors.accent
@@ -209,60 +210,31 @@ fun HabitHomeScreen(
             if (habitItems.isEmpty()) {
                 EmptyHabitsState(onAddHabit = onAddHabit)
             } else {
-                habitItems.forEach { habitItem ->
+                habitItems.forEachIndexed { index, habitItem ->
                     key(habitItem.habit.id) {
-                        HabitCard(
-                            habitItem = habitItem,
-                            onIncrement = {
-                                onIncrement(habitItem.habit.id, habitItem.target)
-                            },
-                            onDecrement = {
-                                onDecrement(habitItem.habit.id, habitItem.target)
-                            },
-                            onToggleComplete = {
-                                onToggleCompletion(habitItem.habit.id, habitItem.target)
-                            },
-                            onClick = {
-                                onHabitClick(habitItem)
-                            }
-                        )
-                    }
+                        AnimatedEntrance(index = index) {
+                            HabitCard(
+                                habitItem = habitItem,
+                                onIncrement = {
+                                    onIncrement(habitItem.habit.id, habitItem.target)
+                                },
+                                onDecrement = {
+                                    onDecrement(habitItem.habit.id, habitItem.target)
+                                },
+                                onToggleComplete = {
+                                    onToggleCompletion(habitItem.habit.id, habitItem.target)
+                                },
+                                onClick = {
+                                    onHabitClick(habitItem)
+                                }
+                            )
+                        }
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
                 }
             }
         }
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun HabitHomeScreenPreview() {
-    val sampleItems = listOf(
-        HabitItemUiState(
-            habit = Habit(1, "Drink Water", "💧", "5 of 8 glasses", target = 8, unit = "glasses"),
-            date = "2026-03-09",
-            completedCount = 5,
-            target = 8,
-            isCompleted = false
-        ),
-        HabitItemUiState(
-            habit = Habit(2, "Read a Book", "📖", "3 of 3 pages", target = 3, unit = "pages"),
-            date = "2026-03-09",
-            completedCount = 3,
-            target = 3,
-            isCompleted = true
-        )
-    )
-
-    HabitHomeScreen(
-        habitItems = sampleItems,
-        selectedDate = "2026-03-09",
-        onDateSelected = {},
-        onAddHabit = {},
-        onIncrement = { _, _ -> },
-        onDecrement = { _, _ -> },
-        onToggleCompletion = { _, _ -> },
-        onHabitClick = {}
-    )
-}

@@ -13,6 +13,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.habitflow.app.ui.theme.AppTheme
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import com.habitflow.app.R
+import com.habitflow.app.util.AppIcon
 
 private val Background: Color @Composable get() = AppTheme.colors.background
 private val Green: Color @Composable get() = AppTheme.colors.accent
@@ -30,7 +40,9 @@ fun SettingsScreen(
     onImportBackup: (String) -> Unit = {},
     onImportFromFile: () -> Unit = {},
     onResetData: () -> Unit = {},
-    bottomBar: @Composable () -> Unit
+    bottomBar: @Composable () -> Unit,
+    selectedIcon: AppIcon = AppIcon.BUN,
+    onIconSelected: (AppIcon) -> Unit = {},
 ) {
     var showImportDialog by remember { mutableStateOf(false) }
     var showResetDialog by remember { mutableStateOf(false) }
@@ -121,6 +133,81 @@ fun SettingsScreen(
                 }
             }
 
+            // App Icon Card
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = AppTheme.colors.card)
+            ) {
+                Column(modifier = Modifier.padding(20.dp)) {
+                    Text(
+                        text = "App Icon",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Dark
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Choose how HabitFlow looks on your home screen",
+                        fontSize = 12.sp,
+                        color = Muted
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        AppIcon.entries.forEach { icon ->
+                            val selected = icon == selectedIcon
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(16.dp))
+                                    .clickable { onIconSelected(icon) }
+                                    .padding(8.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(64.dp)
+                                        .clip(CircleShape)
+                                        .background(icon.previewBg)
+                                        .border(
+                                            width = if (selected) 3.dp else 1.dp,
+                                            color = if (selected) Green else AppTheme.colors.divider,
+                                            shape = CircleShape
+                                        ),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    if (icon.previewFg == null) {
+                                        Image(
+                                            painter = painterResource(R.drawable.splash_logo),
+                                            contentDescription = icon.label,
+                                            contentScale = ContentScale.Fit,
+                                            modifier = Modifier.fillMaxSize()
+                                        )
+                                    } else {
+                                        Text(
+                                            text = "✓",
+                                            fontSize = 28.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = icon.previewFg
+                                        )
+                                    }
+                                }
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Text(
+                                    text = icon.label,
+                                    fontSize = 12.sp,
+                                    fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+                                    color = if (selected) Green else Muted
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
             Spacer(modifier = Modifier.height(20.dp))
 
             // Data Management Card
@@ -202,7 +289,7 @@ fun SettingsScreen(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(text = "Version", fontSize = 14.sp, color = Muted)
-                        Text(text = "1.0.0 (Offline First)", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Dark)
+                        Text(text = "1.0.0 (Offline)", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Dark)
                     }
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -212,7 +299,7 @@ fun SettingsScreen(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(text = "Storage", fontSize = 14.sp, color = Muted)
-                        Text(text = "Local Room Database", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Dark)
+                        Text(text = "Local Database", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Dark)
                     }
                 }
             }

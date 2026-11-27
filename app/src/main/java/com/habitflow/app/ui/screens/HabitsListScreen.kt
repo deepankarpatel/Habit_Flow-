@@ -16,6 +16,7 @@ import com.habitflow.app.domain.model.HabitItemUiState
 import com.habitflow.app.ui.components.EmptyHabitsState
 import com.habitflow.app.ui.components.HabitCard
 import com.habitflow.app.ui.theme.AppTheme
+import com.habitflow.app.ui.components.AnimatedEntrance
 
 private val Background: Color @Composable get() = AppTheme.colors.background
 private val Green: Color @Composable get() = AppTheme.colors.accent
@@ -79,25 +80,27 @@ fun HabitsListScreen(
             if (habitItems.isEmpty()) {
                 EmptyHabitsState(onAddHabit = onAddHabit)
             } else {
-                habitItems.forEach { habitItem ->
+                habitItems.forEachIndexed { index, habitItem ->
                     key(habitItem.habit.id) {
-                        HabitCard(
-                            habitItem = habitItem,
-                            onIncrement = {
-                                onIncrement(habitItem.habit.id, habitItem.target)
-                            },
-                            onDecrement = {
-                                onDecrement(habitItem.habit.id, habitItem.target)
-                            },
-                            onToggleComplete = {
-                                onToggleCompletion(habitItem.habit.id, habitItem.target)
-                            },
-                            onClick = {
-                                onHabitClick(habitItem)
-                            }
-                        )
+                        AnimatedEntrance(index = index) {
+                            HabitCard(
+                                habitItem = habitItem,
+                                onIncrement = {
+                                    onIncrement(habitItem.habit.id, habitItem.target)
+                                },
+                                onDecrement = {
+                                    onDecrement(habitItem.habit.id, habitItem.target)
+                                },
+                                onToggleComplete = {
+                                    onToggleCompletion(habitItem.habit.id, habitItem.target)
+                                },
+                                onClick = {
+                                    onHabitClick(habitItem)
+                                }
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(12.dp))
                     }
-                    Spacer(modifier = Modifier.height(12.dp))
                 }
             }
         }

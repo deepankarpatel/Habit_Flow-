@@ -20,8 +20,20 @@ import androidx.compose.ui.unit.sp
 import com.habitflow.app.domain.model.Habit
 import com.habitflow.app.domain.model.HabitItemUiState
 import com.habitflow.app.ui.theme.HabitFlowTheme
-
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.ui.graphics.graphicsLayer
 import com.habitflow.app.ui.theme.AppTheme
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+
 
 private val Background: Color @Composable get() = AppTheme.colors.background
 private val Green: Color @Composable get() = AppTheme.colors.accent
@@ -41,11 +53,38 @@ fun HabitCard(
 ) {
     val habit = habitItem.habit
 
+    // Press feedback
+    val interaction = remember { MutableInteractionSource() }
+    val pressed by interaction.collectIsPressedAsState()
+    val cardScale by animateFloatAsState(
+        if (pressed) 0.97f else 1f, spring(stiffness = Spring.StiffnessMedium), label = "press"
+    )
+
+// Progress bar + completion check
+    val animatedProgress by animateFloatAsState(
+        habitItem.progressFraction, tween(500, easing = FastOutSlowInEasing), label = "progress"
+    )
+    val barColor by animateColorAsState(
+        if (habitItem.isCompleted) Green else AppTheme.colors.secondary, label = "barColor"
+    )
+    val checkColor by animateColorAsState(
+        if (habitItem.isCompleted) Green else AppTheme.colors.divider, label = "checkColor"
+    )
+    val checkScale by animateFloatAsState(
+        if (habitItem.isCompleted) 1f else 0.85f,
+        spring(Spring.DampingRatioMediumBouncy, Spring.StiffnessMedium),
+        label = "checkScale"
+    )
+
     Card(
         modifier = modifier
             .fillMaxWidth()
+            .graphicsLayer { scaleX = cardScale; scaleY = cardScale }
             .then(
-                if (onClick != null) Modifier.clickable { onClick() } else Modifier
+                if (onClick != null) Modifier.clickable(
+                    interactionSource = interaction,
+                    indication = LocalIndication.current
+                ) { onClick() } else Modifier
             ),
         shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(
@@ -138,9 +177,8 @@ fun HabitCard(
                         modifier = Modifier
                             .size(32.dp)
                             .clip(CircleShape)
-                            .background(
-                                if (habitItem.isCompleted) Green else AppTheme.colors.divider
-                            )
+                            .background(checkColor)
+                            .graphicsLayer { scaleX = checkScale; scaleY = checkScale }
                             .clickable { onToggleComplete() },
                         contentAlignment = Alignment.Center
                     ) {
@@ -167,9 +205,9 @@ fun HabitCard(
                 Box(
                     modifier = Modifier
                         .fillMaxHeight()
-                        .fillMaxWidth(habitItem.progressFraction)
+                        .fillMaxWidth(animatedProgress)
                         .clip(CircleShape)
-                        .background(if (habitItem.isCompleted) Green else AppTheme.colors.secondary)
+                        .background(barColor)
                 )
             }
         }
